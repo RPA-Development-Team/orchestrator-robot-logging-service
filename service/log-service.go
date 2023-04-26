@@ -16,7 +16,7 @@ type LogService struct {
 	logRepository repository.LogRepository
 }
 
-func New(repo repository.LogRepository) ILogService {
+func NewLogService(repo repository.LogRepository) ILogService {
 	return &LogService{
 		logRepository: repo,
 	}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -15,6 +16,7 @@ func loadEnvVars() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
+	fmt.Printf("ran")
 }
 
 func setupLogFile() {
