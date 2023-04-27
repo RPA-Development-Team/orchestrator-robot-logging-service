@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/khalidzahra/robot-logging-service/api"
+	"github.com/khalidzahra/robot-logging-service/ws"
 )
 
 func loadEnvVars() {
@@ -32,6 +33,10 @@ func setupAPIRoutes(server *gin.Engine) {
 	}
 }
 
+func setupWebsocketRoute(server *gin.Engine) {
+	server.GET("/rtlogs", ws.WebsocketHandler)
+}
+
 func main() {
 	loadEnvVars()
 	setupLogFile()
@@ -39,6 +44,7 @@ func main() {
 	server := gin.Default()
 
 	setupAPIRoutes(server)
+	setupWebsocketRoute(server)
 
 	server.Run(":8000")
 }
