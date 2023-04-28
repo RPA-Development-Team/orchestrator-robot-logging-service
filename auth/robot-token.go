@@ -34,7 +34,7 @@ func (registry TokenRegistry) GenerateToken() RobotToken {
 
 func (registry TokenRegistry) expiredTokenPurgeService() {
 	ticker := time.NewTicker(1 * time.Second)
-	for _ = range ticker.C {
+	for range ticker.C {
 		for _, token := range registry {
 			if token.Created.Add(expirationPeriod * time.Minute).Before(time.Now()) { // Token has expired
 				delete(registry, token.Token)
