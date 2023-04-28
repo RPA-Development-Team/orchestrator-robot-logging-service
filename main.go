@@ -29,6 +29,7 @@ func setupAPIRoutes(server *gin.Engine) {
 	apiRouter := server.Group("/api")
 	routes := []api.APIRoute{api.RobotRoute{}}
 	for _, route := range routes {
+		route.LoadEnvVariables()
 		route.RegisterRoutes(apiRouter)
 	}
 }

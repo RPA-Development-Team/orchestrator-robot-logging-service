@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/khalidzahra/robot-logging-service/entity"
 	"github.com/khalidzahra/robot-logging-service/ws"
 )
 
-const authURL = "orch-auth-service:8000/api/authenticate/login"
+var authURL string
 
 var Manager *ws.Manager
 
@@ -42,6 +43,10 @@ func (robotRoute RobotRoute) RegisterRoutes(router *gin.RouterGroup) {
 		}
 
 	})
+}
+
+func (robotRoute RobotRoute) LoadEnvVariables() {
+	authURL = os.Getenv("AUTH_URL")
 }
 
 func handleAuthRequest(user entity.User) bool {
