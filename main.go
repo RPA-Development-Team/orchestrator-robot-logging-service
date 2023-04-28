@@ -34,7 +34,8 @@ func setupAPIRoutes(server *gin.Engine) {
 }
 
 func setupWebsocketRoute(server *gin.Engine) {
-	server.GET("/rtlogs", ws.WebsocketHandler)
+	manager := ws.NewManager()
+	server.GET("/rtlogs", manager.HandleSocketConn)
 }
 
 func main() {
