@@ -31,6 +31,7 @@ func NewLogRepository() LogRepository {
 		connection: db.Set("gorm:auto_preload", true),
 	}
 }
+
 func (db *database) CloseDB() {
 	sqlDB, _ := db.connection.DB()
 	err := sqlDB.Close()

@@ -47,7 +47,7 @@ func LogEmitEventHandler(e Event, c *Client) error {
 		Message:   logEvent.Message,
 		RobotID:   logEvent.RobotID,
 	}
-	logService.Save(logEntry)
+	go logService.Save(logEntry)
 	fmt.Printf("Receieved log entry: %s", logEntry.Message)
 	return nil
 }
