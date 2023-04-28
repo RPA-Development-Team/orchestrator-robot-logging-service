@@ -27,7 +27,7 @@ func setupLogFile() {
 
 func setupAPIRoutes(server *gin.Engine) {
 	apiRouter := server.Group("/api")
-	routes := []api.APIRoute{api.LogRoute{}}
+	routes := []api.APIRoute{}
 	for _, route := range routes {
 		route.RegisterRoutes(apiRouter)
 	}

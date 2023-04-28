@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"sync"
@@ -12,14 +13,24 @@ import (
 type ClientRegistry map[*Client]bool
 
 type Manager struct {
-	registry ClientRegistry
-	sync.RWMutex
+	registry      ClientRegistry
+	sync.RWMutex             // To provide thread saftey for the registry
+	egress        chan Event // Unbuffered channel for writing to connection to prevent writes being hogged up
+	eventHandlers map[string]EventHandler
 }
 
 func NewManager() *Manager {
-	return &Manager{
-		registry: make(ClientRegistry),
+	m := &Manager{
+		registry:      make(ClientRegistry),
+		egress:        make(chan Event),
+		eventHandlers: make(map[string]EventHandler),
 	}
+	m.registerHandlers()
+	return m
+}
+
+func (m *Manager) registerHandlers() {
+	m.eventHandlers[EventLogEmit] = LogEmitEventHandler
 }
 
 func (m *Manager) HandleSocketConn(ctx *gin.Context) {
@@ -39,7 +50,8 @@ func (m *Manager) HandleSocketConn(ctx *gin.Context) {
 	client := NewClient(conn, m)
 	m.RegisterClient(client)
 
-	go client.InitListener()
+	go client.InitReadListener()
+	go client.InitWriteListener()
 }
 
 func (m *Manager) RegisterClient(client *Client) {
@@ -57,4 +69,15 @@ func (m *Manager) RemoveClient(client *Client) {
 		client.conn.Close()
 		delete(m.registry, client)
 	}
+}
+
+func (m *Manager) HandleEvent(e Event, c *Client) error {
+	if handler, exists := m.eventHandlers[e.Type]; exists {
+		if err := handler(e, c); err != nil {
+			return err
+		}
+	} else {
+		return fmt.Errorf("invalid event type: %s", e.Type)
+	}
+	return nil
 }
