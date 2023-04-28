@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"github.com/khalidzahra/robot-logging-service/auth"
 )
 
 type ClientRegistry map[*Client]bool
@@ -17,6 +18,7 @@ type Manager struct {
 	sync.RWMutex             // To provide thread saftey for the registry
 	egress        chan Event // Unbuffered channel for writing to connection to prevent writes being hogged up
 	eventHandlers map[string]EventHandler
+	TokenRegistry auth.TokenRegistry
 }
 
 func NewManager() *Manager {
@@ -24,6 +26,7 @@ func NewManager() *Manager {
 		registry:      make(ClientRegistry),
 		egress:        make(chan Event),
 		eventHandlers: make(map[string]EventHandler),
+		TokenRegistry: auth.NewTokenRegistry(),
 	}
 	m.registerHandlers()
 	return m
@@ -38,6 +41,14 @@ func (m *Manager) HandleSocketConn(ctx *gin.Context) {
 		CheckOrigin: func(r *http.Request) bool {
 			return true
 		},
+	}
+
+	token := ctx.Query("token")
+	if !m.TokenRegistry.ValidateToken(token) {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid token",
+		})
+		return
 	}
 
 	conn, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)

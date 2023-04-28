@@ -27,7 +27,7 @@ func setupLogFile() {
 
 func setupAPIRoutes(server *gin.Engine) {
 	apiRouter := server.Group("/api")
-	routes := []api.APIRoute{}
+	routes := []api.APIRoute{api.RobotRoute{}}
 	for _, route := range routes {
 		route.RegisterRoutes(apiRouter)
 	}
@@ -35,6 +35,7 @@ func setupAPIRoutes(server *gin.Engine) {
 
 func setupWebsocketRoute(server *gin.Engine) {
 	manager := ws.NewManager()
+	api.Manager = manager
 	server.GET("/rtlogs", manager.HandleSocketConn)
 }
 
@@ -44,8 +45,8 @@ func main() {
 
 	server := gin.Default()
 
-	setupAPIRoutes(server)
 	setupWebsocketRoute(server)
+	setupAPIRoutes(server)
 
 	server.Run(":8000")
 }
