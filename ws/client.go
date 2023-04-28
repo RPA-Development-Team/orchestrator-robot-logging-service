@@ -3,8 +3,14 @@ package ws
 import (
 	"encoding/json"
 	"log"
+	"time"
 
 	"github.com/gorilla/websocket"
+)
+
+const (
+	pongInterval = 10 * time.Second
+	pingInterval = (pongInterval * 9) / 10
 )
 
 type Client struct {
@@ -22,6 +28,15 @@ func NewClient(conn *websocket.Conn, manager *Manager) *Client {
 // InitReadListener starts listening for incoming messages from the client to the server.
 func (c *Client) InitReadListener() {
 	defer c.manager.RemoveClient(c)
+
+	if err := c.conn.SetReadDeadline(time.Now().Add(pongInterval)); err != nil {
+		log.Println(err)
+		return
+	}
+
+	// Set custom pong handler
+	c.conn.SetPongHandler(c.pongHandler)
+
 	for {
 		_, payload, err := c.conn.ReadMessage()
 
@@ -51,7 +66,13 @@ func (c *Client) InitReadListener() {
 
 // InitWriteListener listens for new messages in the channel associated with the client's manager
 func (c *Client) InitWriteListener() {
-	defer c.manager.RemoveClient(c)
+
+	ticker := time.NewTicker(pingInterval)
+
+	defer func() {
+		ticker.Stop()
+		c.manager.RemoveClient(c)
+	}()
 
 	for {
 		select {
@@ -67,7 +88,15 @@ func (c *Client) InitWriteListener() {
 					log.Println(err)
 				}
 			}
+		case <-ticker.C: // Send ping to client every tick to keep connection alive
+			if err := c.conn.WriteMessage(websocket.PingMessage, []byte{}); err != nil {
+				return
+			}
 		}
 	}
 
+}
+
+func (c *Client) pongHandler(pongMsg string) error {
+	return c.conn.SetReadDeadline(time.Now().Add(pongInterval))
 }
