@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/khalidzahra/robot-logging-service/entity"
-	"github.com/khalidzahra/robot-logging-service/repository"
 	"github.com/khalidzahra/robot-logging-service/service"
 )
 
@@ -13,6 +12,8 @@ const (
 	EventLogEmit      = "logEmitEvent"
 	EventErrorMessage = "errorMessageEvent"
 )
+
+var LogService service.ILogService
 
 type Event struct {
 	Type    string          `json:"type"`
@@ -32,11 +33,7 @@ type ErrorMessageEvent struct {
 type EventHandler func(e Event, c *Client) error
 
 func LogEmitEventHandler(e Event, c *Client) error {
-	var (
-		logRepository repository.LogRepository = repository.NewLogRepository()
-		logService    service.ILogService      = service.NewLogService(logRepository)
-		logEvent      LogEmitEvent
-	)
+	var logEvent LogEmitEvent
 
 	if err := json.Unmarshal(e.Payload, &logEvent); err != nil {
 		return fmt.Errorf("invalid payload error:\n %v", err)
@@ -47,7 +44,7 @@ func LogEmitEventHandler(e Event, c *Client) error {
 		Message:   logEvent.Message,
 		RobotID:   logEvent.RobotID,
 	}
-	go logService.Save(logEntry)
+	go LogService.Save(logEntry)
 	fmt.Printf("Receieved log entry: %s", logEntry.Message)
 	return nil
 }

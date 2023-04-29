@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -9,15 +8,17 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/khalidzahra/robot-logging-service/api"
+	"github.com/khalidzahra/robot-logging-service/service"
 	"github.com/khalidzahra/robot-logging-service/ws"
 )
+
+var logService service.ILogService
 
 func loadEnvVars() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-	fmt.Printf("ran")
 }
 
 func setupLogFile() {
@@ -40,9 +41,15 @@ func setupWebsocketRoute(server *gin.Engine) {
 	server.GET("/rtlogs", manager.HandleSocketConn)
 }
 
+func initServices() {
+	logService = service.NewLogService()
+	ws.LogService = logService
+}
+
 func main() {
 	loadEnvVars()
 	setupLogFile()
+	initServices()
 
 	server := gin.Default()
 

@@ -11,9 +11,10 @@ import (
 	"github.com/khalidzahra/robot-logging-service/ws"
 )
 
-var authURL string
-
-var Manager *ws.Manager
+var (
+	authURL string
+	Manager *ws.Manager
+)
 
 type RobotRoute struct {
 }
