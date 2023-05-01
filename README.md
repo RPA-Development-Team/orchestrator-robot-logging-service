@@ -53,6 +53,7 @@ Subsequent communication between this service and the clients must be event base
 ### Supported Events
 This is a list of all supported events:
 - logEmitEvent - Sent by the client to the service to register logs
+- logReceiveEvent - Sent by service to client to notify it of log reception
 - errorMessageEvent - Sent by the service to the client to notify it of potential errors
 ### LogEmitEvent
 The format for this event looks as follows:
@@ -72,6 +73,9 @@ The format for this event looks as follows:
 If the sent log was successfully saved, the following response is sent to the client:
 ```json
 {
-    "message": "Log entry received."
+    "eventName": "logReceiveEvent",
+    "payload": {
+        "message": "Log entry received.",
+    }
 }
 ```

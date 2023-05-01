@@ -11,6 +11,7 @@ import (
 const (
 	EventLogEmit      = "logEmitEvent"
 	EventErrorMessage = "errorMessageEvent"
+	EventLogReceive   = "logReceiveEvent"
 )
 
 var LogService service.ILogService
@@ -30,6 +31,10 @@ type ErrorMessageEvent struct {
 	Error string `json:"error"`
 }
 
+type LogReceiveEvent struct {
+	Message string `json:"message"`
+}
+
 type EventHandler func(e Event, c *Client) error
 
 func LogEmitEventHandler(e Event, c *Client) error {
@@ -44,7 +49,17 @@ func LogEmitEventHandler(e Event, c *Client) error {
 		Message:   logEvent.Message,
 		RobotID:   logEvent.RobotID,
 	}
+
 	go LogService.Save(logEntry)
-	fmt.Printf("Receieved log entry: %s", logEntry.Message)
+
+	logReceiveEvent, _ := json.Marshal(LogReceiveEvent{
+		Message: "Log entry receieved.",
+	})
+
+	c.manager.egress <- Event{
+		Type:    EventLogReceive,
+		Payload: logReceiveEvent,
+	}
+
 	return nil
 }
