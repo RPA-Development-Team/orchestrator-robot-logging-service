@@ -46,7 +46,7 @@ This endpoint is concerened with establishing a websocket connection with the cl
 Subsequent communication between this service and the clients must be event based and must conform to the following format:
 ```json
 {
-    "type": "logEmitEvent",
+    "eventType": "logEmitEvent",
     "payload": "myPayload"
 }
 ```
@@ -59,7 +59,7 @@ This is a list of all supported events:
 The format for this event looks as follows:
 ```json
 {
-    "type": "logEmitEvent",
+    "eventType": "logEmitEvent",
     "payload": {
         "logType": "ERROR",
         "name": "MessageBox",
@@ -73,7 +73,7 @@ The format for this event looks as follows:
 If the sent log was successfully saved, the following response is sent to the client:
 ```json
 {
-    "type": "logReceiveEvent",
+    "eventType": "logReceiveEvent",
     "payload": {
         "message": "Log entry received.",
     }

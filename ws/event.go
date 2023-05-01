@@ -17,7 +17,7 @@ const (
 var LogService service.ILogService
 
 type Event struct {
-	Type    string          `json:"type"`
+	Type    string          `json:"eventType"`
 	Payload json.RawMessage `json:"payload"`
 }
 
