@@ -22,6 +22,9 @@ type Event struct {
 }
 
 type LogEmitEvent struct {
+	LogType   string `json:"logType"`
+	Name      string `json:"name"`
+	Status    string `json:"status"`
 	Timestamp string `json:"timestamp"`
 	Message   string `json:"message"`
 	RobotID   uint64 `json:"robotId"`
@@ -41,10 +44,22 @@ func LogEmitEventHandler(e Event, c *Client) error {
 	var logEvent LogEmitEvent
 
 	if err := json.Unmarshal(e.Payload, &logEvent); err != nil {
+		errMsgEvent, _ := json.Marshal(ErrorMessageEvent{
+			Error: err.Error(),
+		})
+
+		c.manager.egress <- Event{
+			Type:    EventErrorMessage,
+			Payload: errMsgEvent,
+		}
+
 		return fmt.Errorf("invalid payload error:\n %v", err)
 	}
 
 	logEntry := entity.Log{
+		LogType:   logEvent.LogType,
+		Name:      logEvent.Name,
+		Status:    logEvent.Status,
 		Timestamp: logEvent.Timestamp,
 		Message:   logEvent.Message,
 		RobotID:   logEvent.RobotID,
