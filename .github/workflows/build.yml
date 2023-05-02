@@ -10,7 +10,6 @@ env:
 jobs:
   build-and-deploy:
     name: Build and Deploy
-    needs: test
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
