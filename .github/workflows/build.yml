@@ -20,5 +20,5 @@ jobs:
         username: ${{ secrets.GCE_USERNAME }}
         key: ${{ secrets.GCE_KEY }}
         script: |
-          cd ${{ secrets.GCE_DEPLOYMENT_PATH }}/orchestrator-robot-logging-service && git pull origin master && cd ${{ secrets.GCE_DEPLOYMENT_PATH }}/orchestrator-nginx-gateway
+          cd ${{ secrets.GCE_DEPLOYMENT_PATH }}/orchestrator-robot-logging-service && git pull origin main && cd ${{ secrets.GCE_DEPLOYMENT_PATH }}/orchestrator-nginx-gateway
           sudo docker compose up -d --build orch-robot-logging-service
