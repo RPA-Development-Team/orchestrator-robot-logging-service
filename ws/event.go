@@ -65,7 +65,7 @@ func LogEmitEventHandler(e Event, c *Client) error {
 		RobotID:   logEvent.RobotID,
 	}
 
-	go LogService.Save(logEntry)
+	go LogService.Save(&logEntry)
 
 	logReceiveEvent, _ := json.Marshal(LogReceiveEvent{
 		Message: "Log entry receieved.",

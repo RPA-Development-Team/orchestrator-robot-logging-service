@@ -6,7 +6,7 @@ import (
 )
 
 type ILogService interface {
-	Save(entity.Log) entity.Log
+	Save(*entity.Log) entity.Log
 	Update(log entity.Log)
 	Delete(log entity.Log)
 	FindAll() []entity.Log
@@ -22,9 +22,9 @@ func NewLogService() ILogService {
 	}
 }
 
-func (service *LogService) Save(log entity.Log) entity.Log {
+func (service *LogService) Save(log *entity.Log) entity.Log {
 	service.logRepository.Save(log)
-	return log
+	return *log
 }
 
 func (service *LogService) FindAll() []entity.Log {

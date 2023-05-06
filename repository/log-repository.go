@@ -9,7 +9,7 @@ import (
 )
 
 type LogRepository interface {
-	Save(log entity.Log)
+	Save(log *entity.Log)
 	Update(log entity.Log)
 	Delete(log entity.Log)
 	FindAll() []entity.Log
@@ -40,8 +40,8 @@ func (db *database) CloseDB() {
 	}
 }
 
-func (db *database) Save(log entity.Log) {
-	db.connection.Create(&log)
+func (db *database) Save(log *entity.Log) {
+	db.connection.Create(log)
 }
 
 func (db *database) Update(log entity.Log) {
