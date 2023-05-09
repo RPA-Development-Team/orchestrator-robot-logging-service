@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/khalidzahra/robot-logging-service/entity"
 	"github.com/khalidzahra/robot-logging-service/service"
 )
 
@@ -56,16 +55,16 @@ func LogEmitEventHandler(e Event, c *Client) error {
 		return fmt.Errorf("invalid payload error:\n %v", err)
 	}
 
-	logEntry := entity.Log{
-		LogType:   logEvent.LogType,
-		Name:      logEvent.Name,
-		Status:    logEvent.Status,
-		Timestamp: logEvent.Timestamp,
-		Message:   logEvent.Message,
-		RobotID:   logEvent.RobotID,
-	}
+	// logEntry := entity.Log{
+	// 	LogType:   logEvent.LogType,
+	// 	Name:      logEvent.Name,
+	// 	Status:    logEvent.Status,
+	// 	Timestamp: logEvent.Timestamp,
+	// 	Message:   logEvent.Message,
+	// 	RobotID:   logEvent.RobotID,
+	// }
 
-	go LogService.Save(&logEntry)
+	// go LogService.Save(&logEntry)
 
 	logReceiveEvent, _ := json.Marshal(LogReceiveEvent{
 		Message: "Log entry receieved.",
