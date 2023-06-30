@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
-	"fmt"
 
 	"github.com/khalidzahra/robot-logging-service/entity"
 )
