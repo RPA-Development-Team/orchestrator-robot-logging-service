@@ -1,40 +1,49 @@
 package service
 
 import (
+	"bytes"
+	"encoding/json"
+	"net/http"
+	"os"
+	"fmt"
+
 	"github.com/khalidzahra/robot-logging-service/entity"
-	"github.com/khalidzahra/robot-logging-service/repository"
 )
 
 type ILogService interface {
-	Save(*entity.Log) entity.Log
-	Update(log entity.Log)
-	Delete(log entity.Log)
-	FindAll() []entity.Log
+	Save(entity.Log) bool
 }
 
 type LogService struct {
-	logRepository repository.LogRepository
+	elasticEndpoint string
 }
 
 func NewLogService() ILogService {
 	return &LogService{
-		logRepository: repository.NewLogRepository(),
+		elasticEndpoint: os.Getenv("ELASTIC_ENDPOINT"),
 	}
 }
 
-func (service *LogService) Save(log *entity.Log) entity.Log {
-	service.logRepository.Save(log)
-	return *log
-}
+func (service *LogService) Save(log entity.Log) bool {
+	payload, err := json.Marshal(log)
+	if err != nil {
+		return false
+	}
 
-func (service *LogService) FindAll() []entity.Log {
-	return service.logRepository.FindAll()
-}
+	r, err := http.NewRequest("POST", service.elasticEndpoint, bytes.NewBuffer(payload))
+	if err != nil {
+		return false
+	}
 
-func (service *LogService) Update(log entity.Log) {
-	service.logRepository.Update(log)
-}
+	r.Header.Add("Content-Type", "application/json")
 
-func (service *LogService) Delete(log entity.Log) {
-	service.logRepository.Delete(log)
+	client := &http.Client{}
+	res, err := client.Do(r)
+	if err != nil {
+		return false
+	}
+
+	defer res.Body.Close()
+
+	return res.StatusCode == http.StatusOK
 }
