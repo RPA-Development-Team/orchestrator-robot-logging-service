@@ -1,12 +1,15 @@
 package api
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/khalidzahra/robot-logging-service/entity"
 	"github.com/khalidzahra/robot-logging-service/ws"
 )
@@ -17,6 +20,17 @@ var (
 	keycloakClientSecret string
 	Manager              *ws.Manager
 )
+
+type KeycloakResponse struct {
+	AccessToken      string `json:"access_token"`
+	ExpiresIn        int    `json:"expires_in"`
+	RefreshExpiresIn int    `json:"refresh_expires_in"`
+	RefreshToken     string `json:"refresh_token"`
+	TokenType        string `json:"token_type"`
+	NotBeforePolicy  int    `json:"not-before-policy"`
+	SessionState     string `json:"session_state"`
+	Scope            string `json:"scope"`
+}
 
 type RobotRoute struct {
 }
@@ -34,10 +48,11 @@ func (robotRoute RobotRoute) RegisterRoutes(router *gin.RouterGroup) {
 			return
 		}
 
-		if handleAuthRequest(user) {
+		if ok, userId := handleAuthRequest(user); ok {
 			token := Manager.TokenRegistry.GenerateToken()
 			ctx.JSON(http.StatusOK, gin.H{
-				"token": token.Token,
+				"token":  token.Token,
+				"userId": userId,
 			})
 		} else {
 			ctx.JSON(http.StatusBadRequest, gin.H{
@@ -54,7 +69,7 @@ func (robotRoute RobotRoute) LoadEnvVariables() {
 	keycloakClientSecret = os.Getenv("KC_CLIENT_SECRET")
 }
 
-func handleAuthRequest(user entity.User) bool {
+func handleAuthRequest(user entity.User) (bool, string) {
 	payload := url.Values{}
 	payload.Set("grant_type", "password")
 	payload.Set("client_id", keycloakClientId)
@@ -64,7 +79,7 @@ func handleAuthRequest(user entity.User) bool {
 
 	r, err := http.NewRequest(http.MethodPost, authURL, strings.NewReader(payload.Encode()))
 	if err != nil {
-		return false
+		return false, ""
 	}
 
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
@@ -72,10 +87,29 @@ func handleAuthRequest(user entity.User) bool {
 	client := &http.Client{}
 	res, err := client.Do(r)
 	if err != nil {
-		return false
+		return false, ""
 	}
 
 	defer res.Body.Close()
 
-	return res.StatusCode == http.StatusOK
+	kcRes := &KeycloakResponse{}
+
+	err = json.NewDecoder(res.Body).Decode(kcRes)
+
+	if err != nil {
+		return false, ""
+	}
+
+	decodedToken, _, err := new(jwt.Parser).ParseUnverified(kcRes.AccessToken, jwt.MapClaims{})
+
+	if err != nil {
+		fmt.Print(err)
+		return false, ""
+	}
+
+	if claims, ok := decodedToken.Claims.(jwt.MapClaims); ok {
+		return res.StatusCode == http.StatusOK, claims["sub"].(string)
+	}
+
+	return false, ""
 }
