@@ -20,7 +20,8 @@ This endpoint is used to authenticate the robot using the user's credentials. Th
 The service then checks if the credentials are valid by communicating with the authentication service. If the credentials are valid, a one-time-use robot token is generated and sent to the robot for establishing a websocket connection with the server. The token is sent in the following format:
 ```json
 {
-    "token": "Example Token"
+    "token": "Example Token",
+    "userId": "Example ID"
 }
 ```
 If invalid credentials were sent, the server responds with an HTTP BadRequest (status code 400) and the following JSON response:
