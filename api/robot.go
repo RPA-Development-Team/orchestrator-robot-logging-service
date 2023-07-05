@@ -1,10 +1,10 @@
 package api
 
 import (
-	"bytes"
-	"encoding/json"
 	"net/http"
+	"net/url"
 	"os"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/khalidzahra/robot-logging-service/entity"
@@ -12,8 +12,10 @@ import (
 )
 
 var (
-	authURL string
-	Manager *ws.Manager
+	authURL              string
+	keycloakClientId     string
+	keycloakClientSecret string
+	Manager              *ws.Manager
 )
 
 type RobotRoute struct {
@@ -48,20 +50,24 @@ func (robotRoute RobotRoute) RegisterRoutes(router *gin.RouterGroup) {
 
 func (robotRoute RobotRoute) LoadEnvVariables() {
 	authURL = os.Getenv("AUTH_URL")
+	keycloakClientId = os.Getenv("KC_CLIENT_ID")
+	keycloakClientSecret = os.Getenv("KC_CLIENT_SECRET")
 }
 
 func handleAuthRequest(user entity.User) bool {
-	payload, err := json.Marshal(user)
+	payload := url.Values{}
+	payload.Set("grant_type", "password")
+	payload.Set("client_id", keycloakClientId)
+	payload.Set("client_secret", keycloakClientSecret)
+	payload.Set("username", user.Username)
+	payload.Set("password", user.Password)
+
+	r, err := http.NewRequest(http.MethodPost, authURL, strings.NewReader(payload.Encode()))
 	if err != nil {
 		return false
 	}
 
-	r, err := http.NewRequest("POST", authURL, bytes.NewBuffer(payload))
-	if err != nil {
-		return false
-	}
-
-	r.Header.Add("Content-Type", "application/json")
+	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	client := &http.Client{}
 	res, err := client.Do(r)
