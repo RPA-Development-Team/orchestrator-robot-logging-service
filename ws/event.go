@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/khalidzahra/robot-logging-service/service"
 	"github.com/khalidzahra/robot-logging-service/entity"
+	"github.com/khalidzahra/robot-logging-service/service"
 )
 
 const (
@@ -22,12 +22,13 @@ type Event struct {
 }
 
 type LogEmitEvent struct {
-	LogType   string `json:"logType"`
-	Name      string `json:"name"`
-	Status    string `json:"status"`
-	Timestamp string `json:"timestamp"`
-	Message   string `json:"message"`
-	RobotID   uint64 `json:"robotId"`
+	LogType      string `json:"logType"`
+	Name         string `json:"name"`
+	Status       string `json:"status"`
+	Timestamp    string `json:"timestamp"`
+	Message      string `json:"message"`
+	RobotAddress string `json:"robotAddress"`
+	UserId       string `json:"userId"`
 }
 
 type ErrorMessageEvent struct {
@@ -57,12 +58,13 @@ func LogEmitEventHandler(e Event, c *Client) error {
 	}
 
 	logEntry := entity.Log{
-		LogType:   logEvent.LogType,
-		Name:      logEvent.Name,
-		Status:    logEvent.Status,
-		Timestamp: logEvent.Timestamp,
-		Message:   logEvent.Message,
-		RobotID:   logEvent.RobotID,
+		LogType:      logEvent.LogType,
+		Name:         logEvent.Name,
+		Status:       logEvent.Status,
+		Timestamp:    logEvent.Timestamp,
+		Message:      logEvent.Message,
+		RobotAddress: logEvent.RobotAddress,
+		UserId:       logEvent.UserId,
 	}
 
 	go LogService.Save(logEntry)
